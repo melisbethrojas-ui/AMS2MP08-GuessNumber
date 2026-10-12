@@ -9,6 +9,7 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
+    <!-- Contador de intentos -->
     <TextView
         android:id="@+id/tvIntentos"
         android:layout_width="wrap_content"
@@ -31,14 +32,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvIntentos" />
 
+    <!-- Campo numérico-->
     <EditText
         android:id="@+id/etNumero"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_marginTop="16dp"
         android:hint="Introduce un número"
         android:inputType="number"
-        android:minHeight="48dp"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -54,6 +55,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/etNumero" />
 
+    <!-- ScrollView para el historial de intentos -->
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
@@ -72,7 +74,6 @@
             android:layout_height="wrap_content"
             android:text="--- Historial de intentos ---\n"
             android:textSize="16sp" />
-
     </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

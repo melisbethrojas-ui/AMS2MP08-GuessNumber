@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AMS2MP08-GuessNumber_rojasm</string>
+    <string name="username">pablo, pepe ...</string>
+    <string name="password">hola</string>
 </resources>

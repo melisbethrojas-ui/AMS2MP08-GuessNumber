@@ -6,14 +6,11 @@ import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
-
-    private var numeroSecreto: Int = 0
-    private var intentos: Int = 0
 
     private lateinit var tvIntentos: TextView
     private lateinit var etNumero: EditText
@@ -31,7 +28,13 @@ class MainActivity : AppCompatActivity() {
         tvHistorial = findViewById(R.id.tvHistorial)
         scrollView = findViewById(R.id.scrollView)
 
-        nuevoJuego()
+        if (numeroSecreto == 0) {
+            numeroSecreto = Random.nextInt(1, 101)
+            historial = "--- Historial de intentos ---\n"
+        }
+
+        tvIntentos.text = "Intentos: $intentos"
+        tvHistorial.text = historial
 
         btnAdivinar.setOnClickListener {
             procesarIntento()
@@ -39,17 +42,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun nuevoJuego() {
+
         numeroSecreto = Random.nextInt(1, 101)
         intentos = 0
 
+        historial = "--- Historial de intentos ---\n"
+
         tvIntentos.text = "Intentos: 0"
-        tvHistorial.text = "--- Historial de intentos ---\n"
+        tvHistorial.text = historial
 
         etNumero.text.clear()
         etNumero.requestFocus()
     }
 
     private fun procesarIntento() {
+
         val entradaText = etNumero.text.toString()
 
         if (entradaText.isEmpty()) {
@@ -69,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                 "El número debe estar entre 1 y 100",
                 Toast.LENGTH_SHORT
             ).show()
+
             etNumero.text.clear()
             etNumero.requestFocus()
             return
@@ -108,13 +116,7 @@ class MainActivity : AppCompatActivity() {
                 "Intento $intentos: $numeroUsuario -> ¡CORRECTO!"
             )
 
-            Toast.makeText(
-                this,
-                "¡Correcto! Has acertado en $intentos intentos",
-                Toast.LENGTH_LONG
-            ).show()
-
-            nuevoJuego()
+            victoria()
         }
 
         etNumero.text.clear()
@@ -122,10 +124,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun agregarAlHistorial(mensaje: String) {
-        tvHistorial.append("$mensaje\n")
+
+        historial += "$mensaje\n"
+
+        tvHistorial.text = historial
 
         scrollView.post {
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
         }
+    }
+
+    private fun victoria() {
+
+        AlertDialog.Builder(this)
+            .setTitle("¡Felicidades!")
+            .setMessage(
+                "Has acertado el número $numeroSecreto en $intentos intentos."
+            )
+            .setPositiveButton("Aceptar") { _, _ ->
+                nuevoJuego()
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    companion object {
+        var numeroSecreto = 0
+        var intentos = 0
+        var historial = "--- Historial de intentos ---\n"
     }
 }
