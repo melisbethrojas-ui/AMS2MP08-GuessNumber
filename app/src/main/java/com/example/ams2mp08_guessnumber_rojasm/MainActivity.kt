@@ -6,18 +6,31 @@ import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
 import kotlin.random.Random
+import android.text.InputType
+
+class Record(
+    val nombre: String,
+    val intentos: Int
+)
 
 class MainActivity : AppCompatActivity() {
 
+    var numeroSecreto: Int = 0
+    var intentos: Int = 0
+    var nombreJugador: String = ""
     private lateinit var tvIntentos: TextView
     private lateinit var etNumero: EditText
     private lateinit var btnAdivinar: Button
     private lateinit var tvHistorial: TextView
     private lateinit var scrollView: ScrollView
-
+    private val clasificacion = mutableListOf(
+        Record("Ana", 3),
+        Record("Juan", 5),
+        Record("Marta", 8)
+    )
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -28,35 +41,62 @@ class MainActivity : AppCompatActivity() {
         tvHistorial = findViewById(R.id.tvHistorial)
         scrollView = findViewById(R.id.scrollView)
 
-        if (numeroSecreto == 0) {
+        if (numeroSecreto == 0){
             numeroSecreto = Random.nextInt(1, 101)
-            historial = "--- Historial de intentos ---\n"
+            tvHistorial.append("\n")
         }
-
-        tvIntentos.text = "Intentos: $intentos"
-        tvHistorial.text = historial
+        mostrarDialog()
+        nuevoJuego()
 
         btnAdivinar.setOnClickListener {
             procesarIntento()
         }
     }
 
-    private fun nuevoJuego() {
+    private fun mostrarDialog() {
 
+        val inputNombre = EditText(this)
+        inputNombre.hint = "Escribe tu nombre"
+        inputNombre.inputType = InputType.TYPE_CLASS_TEXT
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Nombre del jugador")
+            .setMessage("Introduce tu nombre para comenzar")
+            .setView(inputNombre)
+            .setCancelable(false)
+            .setPositiveButton("Aceptar", null)
+            .create()
+
+        dialog.setOnShowListener {
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+
+                val nombre = inputNombre.text.toString().trim()
+
+                if (nombre.isEmpty()) {
+                    inputNombre.error = "Introduce un nombre"
+                } else {
+                    nombreJugador = nombre
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun nuevoJuego() {
         numeroSecreto = Random.nextInt(1, 101)
         intentos = 0
 
-        historial = "--- Historial de intentos ---\n"
-
         tvIntentos.text = "Intentos: 0"
-        tvHistorial.text = historial
+        tvHistorial.text = "--- Historial de intentos ---\n"
 
         etNumero.text.clear()
         etNumero.requestFocus()
     }
 
     private fun procesarIntento() {
-
         val entradaText = etNumero.text.toString()
 
         if (entradaText.isEmpty()) {
@@ -76,7 +116,6 @@ class MainActivity : AppCompatActivity() {
                 "El número debe estar entre 1 y 100",
                 Toast.LENGTH_SHORT
             ).show()
-
             etNumero.text.clear()
             etNumero.requestFocus()
             return
@@ -116,7 +155,14 @@ class MainActivity : AppCompatActivity() {
                 "Intento $intentos: $numeroUsuario -> ¡CORRECTO!"
             )
 
-            victoria()
+            clasificacion.add(
+                Record(
+                    nombreJugador,
+                    intentos
+                )
+            )
+
+            mostrarRanking()
         }
 
         etNumero.text.clear()
@@ -124,33 +170,51 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun agregarAlHistorial(mensaje: String) {
-
-        historial += "$mensaje\n"
-
-        tvHistorial.text = historial
+        tvHistorial.append("$mensaje\n")
 
         scrollView.post {
             scrollView.fullScroll(ScrollView.FOCUS_DOWN)
         }
     }
 
-    private fun victoria() {
+    private fun mostrarRanking() {
+
+        clasificacion.sortBy { it.intentos }
+
+        var ranking = ""
+
+        ranking += String.format(
+            "%-5s %-15s %-10s\n",
+            "POS",
+            "NOMBRE",
+            "INTENTOS"
+        )
+
+        ranking += "--------------------------------\n"
+
+        clasificacion.forEachIndexed { index, jugador ->
+
+            ranking += String.format("%-5d %-15s %-10d\n", index + 1, jugador.nombre, jugador.intentos
+            )
+        }
+
+        val tvRanking = TextView(this)
+        tvRanking.typeface = android.graphics.Typeface.MONOSPACE
+        tvRanking.text = ranking
 
         AlertDialog.Builder(this)
-            .setTitle("¡Felicidades!")
-            .setMessage(
-                "Has acertado el número $numeroSecreto en $intentos intentos."
-            )
-            .setPositiveButton("Aceptar") { _, _ ->
+            .setTitle("Ranking")
+            .setView(tvRanking)
+            .setPositiveButton("Nueva partida") { _, _ ->
                 nuevoJuego()
+                mostrarDialog()
             }
-            .setCancelable(false)
             .show()
     }
+
 
     companion object {
         var numeroSecreto = 0
         var intentos = 0
-        var historial = "--- Historial de intentos ---\n"
     }
 }
